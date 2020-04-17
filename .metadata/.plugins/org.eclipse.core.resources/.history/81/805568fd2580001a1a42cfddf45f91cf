@@ -1,0 +1,54 @@
+import java.util.Scanner;
+import java.util.Random;
+public class lfsr
+{
+	public static void main(String[] args)
+	{
+		String i = "guess what? Chicken butt";
+		encrypt(i);   
+		//String encr = "222 204 220 202 202 153 206 209 216 205 134 153 250 209 208 218 210 220 215 153 219 204 205 205";
+		//decrypt(encr);
+	}   
+	    
+	public static StringBuilder encrypt(String str)
+	{   
+		StringBuilder res = new StringBuilder("");
+	    
+	    Scanner scan = new Scanner(System.in);
+	    String key1 = "100";
+	    long key = Long.parseLong(key1);
+		Random rng = new Random(key);
+		int randomNum = rng.nextInt(256);
+		String s = str;
+	    for (int i = 0; i < s.length(); i++)
+	    {
+	        char allChars = s.charAt(i);
+	        int cipherNums = allChars ^ randomNum;
+	        res.append(cipherNums+" ");
+	        //System.out.print(res + cipherNums + " ");
+	    }
+	    return res;
+	}   
+
+    public static void decrypt(String enc)
+    {   
+    	String key1 = "100";
+        int x;
+        StringBuilder res = new StringBuilder("");
+        long key = Long.parseLong(key1);
+        Random rng = new Random(key);
+        Scanner scan = new Scanner(System.in);
+        String[] splitted = enc.trim().split("\\s+");
+        int randomNum = rng.nextInt(256);
+
+        for(x = 0; x < splitted.length ; x++) {
+			if(splitted[x].matches("-?\\d+")) {
+	        	int next = Integer.parseInt(splitted[x]);
+	            int decipher = next ^ randomNum;
+	            res.append((char)decipher);
+	            //System.out.print((char)decipher);
+	        } 
+    	}
+        System.out.println(res);
+    }
+}
