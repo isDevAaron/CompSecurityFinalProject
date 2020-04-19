@@ -52,8 +52,8 @@ public class alice extends JFrame {
 	public alice() {
 		setFont(new Font("Tahoma", Font.PLAIN, 12));
 		setTitle("Crypto Project");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 494, 427);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(90, 90, 494, 427);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -134,9 +134,22 @@ public class alice extends JFrame {
 			@SuppressWarnings("static-access")
 			public void actionPerformed(ActionEvent e) {
 				String msg = txtMessage.getText();
+				File f = new File("who_sent_msg.txt");
+				if(f.exists()){
+					f.delete();
+					try {
+						f.createNewFile();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+				FileWriter who = null;
 				FileWriter myWriter = null;
 				
 				try {
+					who = new FileWriter("who_sent_msg.txt");
+					who.write("alice");
+					who.close();
 					myWriter = new FileWriter("cipher.txt");
 					myWriter.write(choice.getSelectedItem());
 					myWriter.close();
@@ -204,7 +217,7 @@ public class alice extends JFrame {
 		choice.setBounds(10, 125, 277, 31);
 		choice.add("Block Cipher");
 		choice.add("Stream Cipher");
-		choice.add("RSA or PKE");
+		choice.add("RSA");
 		contentPane.add(choice);
 		
 	}

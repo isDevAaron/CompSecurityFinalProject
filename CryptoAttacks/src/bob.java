@@ -8,6 +8,8 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -33,6 +35,8 @@ public class bob extends JFrame {
 	private boolean check = true;
 	@SuppressWarnings("unused")
 	private JTextArea txtArea;
+	Choice choice = new Choice();
+	ReadFiles read = new ReadFiles();
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -50,8 +54,8 @@ public class bob extends JFrame {
 	public bob() {
 		setFont(new Font("Tahoma", Font.PLAIN, 12));
 		setTitle("Crypto Project");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 494, 427);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(80, 80, 494, 427);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -129,17 +133,54 @@ public class bob extends JFrame {
 		// 'Send' button action
 		JButton btnSend = new JButton("Send message");
 		btnSend.addActionListener(new ActionListener() {
+			@SuppressWarnings("static-access")
 			public void actionPerformed(ActionEvent e) {
 				String msg = txtMessage.getText();
+				File f = new File("who_sent_msg.txt");
+				if(f.exists()){
+					f.delete();
+					try {
+						f.createNewFile();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+				FileWriter who = null;
+				FileWriter myWriter = null;
+				
+				try {
+					who = new FileWriter("who_sent_msg.txt");
+					who.write("bob");
+					who.close();
+					myWriter = new FileWriter("cipher.txt");
+					myWriter.write(choice.getSelectedItem());
+					myWriter.close();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
 				try {
 					if( sock != null ) {
 					   String message = msg;
 					   writeSock.println( message );
 					   String dataRead = null;
 					   try {
-						   txtArea_1.append(msg+"\n");
-						   txtMessage.setText("");
-						   dataRead = readSock.readLine();
+						   if(read.getAttackName().equals("Known PlainText Attack")) {
+							   try {
+								   txtArea_1.append("Partial PlainText:   " + msg.charAt(0)+msg.charAt(1)+msg.charAt(2) + "\n");
+							   } catch(Exception ee) {
+								   txtArea_1.append("Partial PlainText:   " + msg.charAt(0) + "\n");
+							   }
+							   txtMessage.setText("");
+							   dataRead = readSock.readLine();
+						   } else if (read.getAttackName().equals("Chosen CipherText Attack")){
+							   txtArea_1.append("PlainText [SENT BY SERVER]: " + msg + "\n");
+							   txtMessage.setText("");
+							   dataRead = readSock.readLine();
+						   } else {
+							   txtArea_1.append("PlainText:\t" + msg + "\n");
+							   txtMessage.setText("");
+							   dataRead = readSock.readLine();
+						   }
 					   } catch (IOException e1) {
 						   txtMessage.setText("");
 						   txtArea_1.append("Error in receiving data from the server!\n");
@@ -175,11 +216,11 @@ public class bob extends JFrame {
 		lblBob.setBounds(10, 77, 53, 24);
 		contentPane.add(lblBob);
 		
-		Choice choice = new Choice();
+		choice = new Choice();
 		choice.setBounds(10, 125, 277, 31);
 		choice.add("Block Cipher");
 		choice.add("Stream Cipher");
-		choice.add("RSA or PKE");
+		choice.add("RSA");
 		contentPane.add(choice);
 		
 	}

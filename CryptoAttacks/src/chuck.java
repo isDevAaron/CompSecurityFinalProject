@@ -2,24 +2,19 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import java.util.Scanner;  
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Map;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
@@ -58,15 +53,12 @@ public class chuck extends JFrame {
 		});
 	}
 
-	
-	
-	
 	@SuppressWarnings("static-access")
 	public chuck() {
 		setFont(new Font("Tahoma", Font.PLAIN, 12));
 		setTitle("Crypto Project");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 494, 643);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setBounds(100, 100, 494, 456);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -145,7 +137,6 @@ public class chuck extends JFrame {
 		// 'Send' button action
 		JButton btnSend = new JButton("Send message");
 		btnSend.addActionListener(new ActionListener() {
-			@SuppressWarnings("static-access")
 			public void actionPerformed(ActionEvent e) {
 				String msg = txtMessage.getText();
 				FileWriter myWriter = null;
@@ -206,7 +197,7 @@ public class chuck extends JFrame {
 		contentPane.add(btnSend);
 		
 		JScrollPane scrollPane_chuckMsgs = new JScrollPane();
-		scrollPane_chuckMsgs.setBounds(10, 162, 223, 212);
+		scrollPane_chuckMsgs.setBounds(10, 162, 458, 180);
 		contentPane.add(scrollPane_chuckMsgs);
 		scrollPane_chuckMsgs.setViewportView(txtArea_chuckMsgs);
 		
@@ -217,62 +208,37 @@ public class chuck extends JFrame {
 		choice.setBounds(10, 125, 277, 31);
 		choice.add("Block Cipher");
 		choice.add("Stream Cipher");
-		choice.add("RSA or PKE");
+		choice.add("RSA");
 		contentPane.add(choice);
 		
-		JLabel lblNewLabel = new JLabel("Chuck will use this public key and");
-		lblNewLabel.setBounds(243, 178, 228, 14);
-		contentPane.add(lblNewLabel);
-		
-		JLabel lblNewLabel_1 = new JLabel("develop an algorithm to decrypt all");
-		lblNewLabel_1.setBounds(243, 193, 212, 14);
-		contentPane.add(lblNewLabel_1);
-		
-		JLabel lblNewLabel_2 = new JLabel("the messages between Alice and Bob");
-		lblNewLabel_2.setBounds(243, 208, 228, 14);
-		contentPane.add(lblNewLabel_2);
-		
-		JScrollPane scrollPane_key = new JScrollPane();
-		scrollPane_key.setBounds(243, 245, 226, 129);
-		contentPane.add(scrollPane_key);
-		
-		JTextArea textArea_key = new JTextArea();
-		scrollPane_key.setViewportView(textArea_key);
-		Map<String, Object> keys;
-		try {
-			keys = rsaKey.getRSAKeys();
-	        publicKey = (PublicKey) keys.get("public");
-			textArea_key.append(publicKey.toString());
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		JScrollPane scrollPane_decrypted = new JScrollPane();
-		scrollPane_decrypted.setBounds(25, 418, 430, 175);
-		contentPane.add(scrollPane_decrypted);
-		
-		JTextArea textArea_decrypted = new JTextArea();
-		scrollPane_decrypted.setViewportView(textArea_decrypted);
-		
-		JLabel lblNewLabel_4 = new JLabel("Click here to decrypt messages between Alice and Bob:");
-		lblNewLabel_4.setBounds(10, 389, 335, 14);
-		contentPane.add(lblNewLabel_4);
-		
-		JButton Decryptbtn = new JButton("Decrypt");
-		Decryptbtn.setBounds(355, 385, 89, 23);
-		contentPane.add(Decryptbtn);
-		System.out.println(read.getDecrypted());
-
-		Decryptbtn.addActionListener(new ActionListener() {
-
-			@Override
+		JButton decryptBtn = new JButton("Click here to decrypt messages between Alice and Bob");
+		decryptBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("---------------------------------------------");
-				System.out.println(read.getDecrypted());
-				for(int i = 0; i<read.getDecrypted().size(); i++) {
-					textArea_decrypted.append(read.getDecrypted().get(i));
+				chuck_RSA r = null;
+				chuck_block b = null;
+				chuck_stream s = null;
+				try {
+					s = new chuck_stream();
+					r = new chuck_RSA();
+					b = new chuck_block();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				
+				if(read.getCipher().equals("RSA")){
+					r.setVisible(true);
+				} else if (read.getCipher().equals("Block Cipher")) {
+					b.setVisible(true);
+				} else if (read.getCipher().equals("Stream Cipher")) {
+					s.setVisible(true);
 				}
 			}
 		});
+		decryptBtn.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		decryptBtn.setBounds(10, 364, 458, 42);
+		contentPane.add(decryptBtn);
+		
+		
 	}
 }
 

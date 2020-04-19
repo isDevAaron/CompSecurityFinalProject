@@ -3,46 +3,57 @@ public class StreamCipher
 {
 	public static void main(String[] args)
 	{
-		String i = "this is an example string";
+		String i = "testing testing...";
 		System.out.println("plaintext: " + i);
-		String encr = encrypt(i).toString();  
+		long keys = generateRandomKeys();
+		String encr = encrypt(i, keys).toString();  
 		System.out.println("encrypted: " + encr);
-		String dec = decrypt(encr).toString();
+		String dec = decrypt(encr, keys).toString();
 		System.out.println("decrypted: " + dec);
+		
 	}   
 	    
-	public static StringBuilder encrypt(String str)
+	public static long generateRandomKeys() {
+		Random rd = new Random(); // creating Random object
+	    long key = rd.nextLong(); // displaying a random long value
+	    return key;
+	}
+	
+	public static long mainKeys(long r_keys) {
+		Random rng = new Random(r_keys);
+		long randomNum = rng.nextLong();
+		return randomNum;
+	}
+	
+	public static StringBuilder encrypt(String str, long random_key)
 	{   
 		StringBuilder res = new StringBuilder("");
 	    
-	    String key1 = "100";
-	    long key = Long.parseLong(key1);
-		Random rng = new Random(key);
-		int randomNum = rng.nextInt(256);
+		Random rng = new Random(random_key);
+		long randomNum = rng.nextLong();
 		String s = str;
 	    for (int i = 0; i < s.length(); i++)
 	    {
 	        char allChars = s.charAt(i);
-	        int cipherNums = allChars ^ randomNum;
+	        long cipherNums = allChars ^ randomNum;
 	        res.append(cipherNums+" ");
 	    }
 	    return res;
 	}   
 
-    public static StringBuilder decrypt(String enc)
+    public static StringBuilder decrypt(String enc, long random_key)
     {   
-    	String key1 = "100";
         int x;
         StringBuilder res = new StringBuilder("");
-        long key = Long.parseLong(key1);
-        Random rng = new Random(key);
+        Random rng = new Random(random_key);
         String[] splitted = enc.trim().split("\\s+");
-        int randomNum = rng.nextInt(256);
+        //int randomNum = rng.nextInt(256);
+		long randomNum = rng.nextLong();
 
         for(x = 0; x < splitted.length ; x++) {
 			if(splitted[x].matches("-?\\d+")) {
-	        	int next = Integer.parseInt(splitted[x]);
-	            int decipher = next ^ randomNum;
+	        	long next = Long.parseLong(splitted[x]);
+	            long decipher = next ^ randomNum;
 	            res.append((char)decipher);
 	        } 
     	}

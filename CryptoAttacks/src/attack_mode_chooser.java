@@ -98,9 +98,9 @@ public class attack_mode_chooser extends JFrame {
 				alice a = new alice();
 				bob b = new bob();
 				chuck c = new chuck();
+			    c.setVisible(true);
 				a.setVisible(true);
 			    b.setVisible(true);
-			    c.setVisible(true);
 			}
 		});
 	}	
