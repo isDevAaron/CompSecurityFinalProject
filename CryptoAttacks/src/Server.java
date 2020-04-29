@@ -1,3 +1,9 @@
+/*
+ * this class is used to create multiple threads for a connection
+ * so that multiple users can run it at the same time. ServerThread.java is the
+ * main class that is used for communication and this file just initiates that class
+ */
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -38,6 +44,7 @@ public class Server {
 		
 	}
 		
+	// main method that runs the threads
 	public static void main(String[] args) throws IOException {
 		// System.out.println("Server is running ...");
 	    Server server = new Server();

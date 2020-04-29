@@ -2,6 +2,7 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.View;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
@@ -9,12 +10,17 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
@@ -25,19 +31,22 @@ public class bob extends JFrame {
 
 	protected static final int ServerSocket = 0;
 	private JPanel contentPane;
-	private JTextField txtIP;
-	private static JTextField txtPort;
-	private JTextField txtMessage;
-	protected ServerSocket servSock;
-	private Socket sock = new Socket();   
-	private PrintWriter writeSock;    
-	private BufferedReader readSock;
-	private boolean check = true;
-	@SuppressWarnings("unused")
-	private JTextArea txtArea;
-	Choice choice = new Choice();
-	ReadFiles read = new ReadFiles();
-
+	private JTextField txtIP_bob;
+	private static JTextField txtPort_bob;
+	private JTextField txtMessage_bob;
+	protected ServerSocket servSock_bob;
+	private Socket sock_bob = new Socket();   
+	private PrintWriter writeSock_bob;    
+	private BufferedReader readSock_bob;
+	private boolean check_bob = true;
+	private Choice choice_bob;
+	ReadFiles read_bob = new ReadFiles();
+    private String data;
+	public static JTextArea txtArea_bobMsgs = null;
+	File myObj = null;
+	int lineNum = 0; 
+    Scanner myReader = null;
+    
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -50,7 +59,7 @@ public class bob extends JFrame {
 			}
 		});
 	}
-
+	
 	public bob() {
 		setFont(new Font("Tahoma", Font.PLAIN, 12));
 		setTitle("Crypto Project");
@@ -61,81 +70,101 @@ public class bob extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblIpLabel = new JLabel("IP Address");
-		lblIpLabel.setBounds(10, 12, 94, 22);
-		lblIpLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		contentPane.add(lblIpLabel);
+		JLabel lblIpLabel_bob = new JLabel("IP Address");
+		lblIpLabel_bob.setBounds(10, 12, 94, 22);
+		lblIpLabel_bob.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		contentPane.add(lblIpLabel_bob);
 		
-		JLabel lblPortNumber = new JLabel("Port Number");
-		lblPortNumber.setBounds(10, 43, 94, 23);
-		lblPortNumber.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		contentPane.add(lblPortNumber);
+		JLabel lblPortNumber_bob = new JLabel("Port Number");
+		lblPortNumber_bob.setBounds(10, 43, 94, 23);
+		lblPortNumber_bob.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		contentPane.add(lblPortNumber_bob);
 		
-		txtIP = new JTextField();
-		txtIP.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		txtIP.setBounds(102, 12, 184, 23);
-		txtIP.setText("localhost");
-		contentPane.add(txtIP);
-		txtIP.setColumns(10);
+		txtIP_bob = new JTextField();
+		txtIP_bob.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		txtIP_bob.setBounds(102, 12, 184, 23);
+		txtIP_bob.setText("localhost");
+		contentPane.add(txtIP_bob);
+		txtIP_bob.setColumns(10);
 		
-		txtPort = new JTextField();
-		txtPort.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		txtPort.setBounds(102, 43, 184, 23);
-		txtPort.setText("5520");
-		txtPort.setColumns(10);
-		contentPane.add(txtPort);
+		txtPort_bob = new JTextField();
+		txtPort_bob.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		txtPort_bob.setBounds(102, 43, 184, 23);
+		txtPort_bob.setText("5520");
+		txtPort_bob.setColumns(10);
+		contentPane.add(txtPort_bob);
 		
-		JButton btnConnect = new JButton("Connect to the server");
-		JTextArea txtArea_1 = new JTextArea();
+		JButton btnConnect_bob = new JButton("Connect to the server");
+		txtArea_bobMsgs = new JTextArea();
 		
 		// connecting to socket
-		btnConnect.addActionListener(new ActionListener() {
+		btnConnect_bob.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) { 
 				try {
-					   int portNum = Integer.parseInt(txtPort.getText());
+					   System.out.println("here");
+					   int portNum = Integer.parseInt(txtPort_bob.getText());
 					   if(portNum != 5520) {
 						   throw new java.net.UnknownHostException();
 					   }
-					   String hostAddress = txtIP.getText();  
-					   sock = new Socket(hostAddress, portNum );
-					   writeSock = new PrintWriter( sock.getOutputStream(), true );
-					   readSock = new BufferedReader( new InputStreamReader(
-					                                  sock.getInputStream() ) );
-					   if(check == true) {
-						   txtArea_1.append("Connected to Server\n");
-						   btnConnect.setText("Disconnect");
-						   check = false;
+					   String hostAddress = txtIP_bob.getText();  
+					   sock_bob = new Socket(hostAddress, portNum );
+					   writeSock_bob = new PrintWriter( sock_bob.getOutputStream(), true );
+					   readSock_bob = new BufferedReader( new InputStreamReader(
+					                                  sock_bob.getInputStream() ) );
+					   if(check_bob == true) {
+						   txtArea_bobMsgs.append("Connected to Server\n");
+						   btnConnect_bob.setText("Disconnect");
+						   check_bob = false;
 					   } else {
-						   txtArea_1.append("Disconnected!\n");
-						   btnConnect.setText("Connect");
-						   sock = null; 
-						   check = true;
+						   txtArea_bobMsgs.append("Disconnected!\n");
+						   btnConnect_bob.setText("Connect");
+						   sock_bob = null; 
+						   check_bob = true;
 					   }
-					}
-					catch( Exception e3 ) {
-					   //System.out.println( "Error: " + e3.toString() );
-					   txtArea_1.append("Error in connecting \\ disconnecting\n");
-					   sock = null;    
-					}
+				}
+				catch( Exception e3 ) {
+				   //System.out.println( "Error: " + e3.toString() );
+				   txtArea_bobMsgs.append("Error in connecting \\ disconnecting\n");
+				   sock_bob = null;    
+				}
 			}
 		});
 		
-		btnConnect.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		btnConnect.setBounds(296, 29, 175, 37);
-		contentPane.add(btnConnect);
+		btnConnect_bob.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		btnConnect_bob.setBounds(296, 29, 175, 37);
+		contentPane.add(btnConnect_bob);
 		
-		txtMessage = new JTextField();
-		txtMessage.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		txtMessage.setBounds(10, 96, 276, 23);
-		contentPane.add(txtMessage);
-		txtMessage.setColumns(10);
+		txtMessage_bob = new JTextField();
+		txtMessage_bob.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		txtMessage_bob.setBounds(10, 96, 276, 23);
+		contentPane.add(txtMessage_bob);
+		txtMessage_bob.setColumns(10);
+		
+		TimerTask task = new FileWatcher( new File("plaintext.txt") ) {
+			
+			protected void onChange( File file ) {
+		    	  myObj = new File("plaintext.txt");
+		    	  try {
+						myReader = new Scanner(myObj);
+					} catch (FileNotFoundException e12345) {
+						// TODO Auto-generated catch block
+					}
+					while (myReader.hasNextLine()) {
+					  data = myReader.nextLine();
+					}
+					myReader.close();
+					txtArea_bobMsgs.append(data+"\n");
+		    }
+		   };
+		   Timer timer = new Timer();
+		   timer.schedule( task , new Date(), 1000 );
+		
 		
 		// 'Send' button action
-		JButton btnSend = new JButton("Send message");
-		btnSend.addActionListener(new ActionListener() {
-			@SuppressWarnings("static-access")
+		JButton btnSend_bob = new JButton("Send message");
+		btnSend_bob.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String msg = txtMessage.getText();
+				String msg = txtMessage_bob.getText();
 				File f = new File("who_sent_msg.txt");
 				if(f.exists()){
 					f.delete();
@@ -147,81 +176,89 @@ public class bob extends JFrame {
 				}
 				FileWriter who = null;
 				FileWriter myWriter = null;
-				
+				FileWriter plaintext_bob = null;
 				try {
 					who = new FileWriter("who_sent_msg.txt");
 					who.write("bob");
 					who.close();
 					myWriter = new FileWriter("cipher.txt");
-					myWriter.write(choice.getSelectedItem());
+					myWriter.write(choice_bob.getSelectedItem());
 					myWriter.close();
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
 				try {
-					if( sock != null ) {
+					if( sock_bob != null ) {
 					   String message = msg;
-					   writeSock.println( message );
+					   writeSock_bob.println( message );
 					   String dataRead = null;
 					   try {
-						   if(read.getAttackName().equals("Known PlainText Attack")) {
-							   try {
-								   txtArea_1.append("Partial PlainText:   " + msg.charAt(0)+msg.charAt(1)+msg.charAt(2) + "\n");
-							   } catch(Exception ee) {
-								   txtArea_1.append("Partial PlainText:   " + msg.charAt(0) + "\n");
-							   }
-							   txtMessage.setText("");
-							   dataRead = readSock.readLine();
-						   } else if (read.getAttackName().equals("Chosen CipherText Attack")){
-							   txtArea_1.append("PlainText [SENT BY SERVER]: " + msg + "\n");
-							   txtMessage.setText("");
-							   dataRead = readSock.readLine();
-						   } else {
-							   txtArea_1.append("PlainText:\t" + msg + "\n");
-							   txtMessage.setText("");
-							   dataRead = readSock.readLine();
-						   }
+						   plaintext_bob = new FileWriter("plaintext.txt");
+						   plaintext_bob.write("Bob: "+ msg+"\n");
+						   plaintext_bob.close();
+						   txtMessage_bob.setText("");
+						   dataRead = readSock_bob.readLine();
 					   } catch (IOException e1) {
-						   txtMessage.setText("");
-						   txtArea_1.append("Error in receiving data from the server!\n");
+						   txtMessage_bob.setText("");
+						   txtArea_bobMsgs.append("Error in receiving data from the server!\n");
 					   }
-					   txtArea_1.append(dataRead+"\n");
+					   txtArea_bobMsgs.append(dataRead+"\n");
 					   if(msg.equals("quit")) {
-							btnConnect.setText("Connect");
-							sock = null;
-							txtArea_1.append("Disconnected!\n");
-							check = true;
+							btnConnect_bob.setText("Connect");
+							sock_bob = null;
+							txtArea_bobMsgs.append("Disconnected!\n");
+							check_bob = true;
 						}
 					} else {
-						txtMessage.setText("");
-						txtArea_1.append("You are not connected\n");
+						txtMessage_bob.setText("");
+						txtArea_bobMsgs.append("You are not connected\n");
 					}
 				} catch (Exception e2) {
-					txtMessage.setText("");
-					txtArea_1.append("You are not connected\n");
+					txtMessage_bob.setText("");
+					txtArea_bobMsgs.append("You are not connected\n");
+				}
+				lineNum = getWrappedLines(txtArea_bobMsgs);
+				System.out.println(lineNum);
+				if (lineNum > 6) {
+					FileWriter count = null;
+					try {
+						count = new FileWriter("count.txt");
+						count.write(Integer.toString(lineNum));
+						count.close();
+					} catch (Exception w) {
+						
+					}
 				}
 			}
 		});
 		
-		btnSend.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		btnSend.setBounds(298, 108, 173, 37);
-		contentPane.add(btnSend);
+		btnSend_bob.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		btnSend_bob.setBounds(298, 108, 173, 37);
+		contentPane.add(btnSend_bob);
 		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(10, 162, 458, 212);
-		contentPane.add(scrollPane_1);
-		scrollPane_1.setViewportView(txtArea_1);
+		JScrollPane scrollPane_bobMsgs = new JScrollPane();
+		scrollPane_bobMsgs.setBounds(10, 162, 458, 212);
+		contentPane.add(scrollPane_bobMsgs);
+		scrollPane_bobMsgs.setViewportView(txtArea_bobMsgs);
 		
 		JLabel lblBob = new JLabel("Bob:");
 		lblBob.setBounds(10, 77, 53, 24);
 		contentPane.add(lblBob);
 		
-		choice = new Choice();
-		choice.setBounds(10, 125, 277, 31);
-		choice.add("Block Cipher");
-		choice.add("Stream Cipher");
-		choice.add("RSA");
-		contentPane.add(choice);
+		choice_bob = new Choice();
+		choice_bob.setBounds(10, 125, 277, 31);
+		choice_bob.add("Block Cipher");
+		choice_bob.add("Stream Cipher");
+		choice_bob.add("RSA");
+		contentPane.add(choice_bob);
 		
+	}
+	
+	public static int getWrappedLines(JTextArea component)
+	{
+		View view = component.getUI().getRootView(component).getView(0);
+		int preferredHeight = (int)view.getPreferredSpan(View.Y_AXIS);
+		int lineHeight = component.getFontMetrics( component.getFont() ).getHeight();
+		return preferredHeight / lineHeight;
 	}
 }

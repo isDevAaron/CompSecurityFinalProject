@@ -2,6 +2,7 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.View;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
@@ -9,12 +10,17 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
@@ -33,10 +39,15 @@ public class alice extends JFrame {
 	private PrintWriter writeSock;    
 	private BufferedReader readSock;
 	private boolean check = true;
+	FileWriter plaintext = null;
 	Choice choice = new Choice();
 	ReadFiles read = new ReadFiles();
-	
-	public static void main(String[] args) {
+    private String data;
+    File myObj = null;
+	int lineNum = 0; 
+    Scanner myReader = null;
+    
+    public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -84,7 +95,7 @@ public class alice extends JFrame {
 		contentPane.add(txtPort);
 		
 		JButton btnConnect = new JButton("Connect to the server");
-		JTextArea txtArea_1 = new JTextArea();
+		JTextArea txtArea_aliceMsgs = new JTextArea();
 		
 		// connecting to socket
 		btnConnect.addActionListener(new ActionListener() {
@@ -100,11 +111,11 @@ public class alice extends JFrame {
 					   readSock = new BufferedReader( new InputStreamReader(
 					                                  sock.getInputStream() ) );
 					   if(check == true) {
-						   txtArea_1.append("Connected to Server\n");
+						   txtArea_aliceMsgs.append("Connected to Server\n");
 						   btnConnect.setText("Disconnect");
 						   check = false;
 					   } else {
-						   txtArea_1.append("Disconnected!\n");
+						   txtArea_aliceMsgs.append("Disconnected!\n");
 						   btnConnect.setText("Connect");
 						   sock = null; 
 						   check = true;
@@ -112,7 +123,7 @@ public class alice extends JFrame {
 					}
 					catch( Exception e3 ) {
 					   //System.out.println( "Error: " + e3.toString() );
-					   txtArea_1.append("Error in connecting \\ disconnecting\n");
+					   txtArea_aliceMsgs.append("Error in connecting \\ disconnecting\n");
 					   sock = null;    
 					}
 			}
@@ -128,10 +139,29 @@ public class alice extends JFrame {
 		contentPane.add(txtMessage);
 		txtMessage.setColumns(10);
 		
+		TimerTask task = new FileWatcher( new File("plaintext.txt") ) {
+			
+			protected void onChange( File file ) {
+		    	  myObj = new File("plaintext.txt");
+		    	  try {
+						myReader = new Scanner(myObj);
+					} catch (FileNotFoundException e12345) {
+						// TODO Auto-generated catch block
+					}
+					while (myReader.hasNextLine()) {
+					  data = myReader.nextLine();
+					}
+					myReader.close();
+					txtArea_aliceMsgs.append(data+"\n");
+		    }
+		   };
+		   Timer timer = new Timer();
+		   timer.schedule( task , new Date(), 1000 );
+		
 		// 'Send' button action
 		JButton btnSend = new JButton("Send message");
 		btnSend.addActionListener(new ActionListener() {
-			@SuppressWarnings("static-access")
+
 			public void actionPerformed(ActionEvent e) {
 				String msg = txtMessage.getText();
 				File f = new File("who_sent_msg.txt");
@@ -145,7 +175,6 @@ public class alice extends JFrame {
 				}
 				FileWriter who = null;
 				FileWriter myWriter = null;
-				
 				try {
 					who = new FileWriter("who_sent_msg.txt");
 					who.write("alice");
@@ -162,41 +191,41 @@ public class alice extends JFrame {
 					   writeSock.println( message );
 					   String dataRead = null;
 					   try {
-						   if(read.getAttackName().equals("Known PlainText Attack")) {
-							   try {
-								   txtArea_1.append("Partial PlainText:   " + msg.charAt(0)+msg.charAt(1)+msg.charAt(2) + "\n");
-							   } catch(Exception ee) {
-								   txtArea_1.append("Partial PlainText:   " + msg.charAt(0) + "\n");
-							   }
-							   txtMessage.setText("");
-							   dataRead = readSock.readLine();
-						   } else if (read.getAttackName().equals("Chosen CipherText Attack")){
-							   txtArea_1.append("PlainText [SENT BY SERVER]: " + msg + "\n");
-							   txtMessage.setText("");
-							   dataRead = readSock.readLine();
-						   } else {
-							   txtArea_1.append("PlainText:\t" + msg + "\n");
-							   txtMessage.setText("");
-							   dataRead = readSock.readLine();
-						   }
+						   plaintext = new FileWriter("plaintext.txt");
+						   plaintext.write("Alice: "+ msg+"\n");
+						   plaintext.close();
+						   txtMessage.setText("");
+						   dataRead = readSock.readLine();
 					   } catch (IOException e1) {
 						   txtMessage.setText("");
-						   txtArea_1.append("Error in receiving data from the server!\n");
+						   txtArea_aliceMsgs.append("Error in receiving data from the server!\n");
 					   }
-					   txtArea_1.append(dataRead+"\n");
+					   txtArea_aliceMsgs.append(dataRead+"\n");
 					   if(msg.equals("quit")) {
 							btnConnect.setText("Connect");
 							sock = null;
-							txtArea_1.append("Disconnected!\n");
+							txtArea_aliceMsgs.append("Disconnected!\n");
 							check = true;
 						}
 					} else {
 						txtMessage.setText("");
-						txtArea_1.append("You are not connected\n");
+						txtArea_aliceMsgs.append("You are not connected\n");
 					}
 				} catch (Exception e2) {
 					txtMessage.setText("");
-					txtArea_1.append("You are not connected\n");
+					txtArea_aliceMsgs.append("You are not connected\n");
+				}
+				lineNum = getWrappedLines(txtArea_aliceMsgs);
+				System.out.println(lineNum);
+				if (lineNum > 6) {
+					FileWriter count = null;
+					try {
+						count = new FileWriter("count.txt");
+						count.write(Integer.toString(lineNum));
+						count.close();
+					} catch (Exception w) {
+						
+					}
 				}
 			}
 		});
@@ -205,10 +234,10 @@ public class alice extends JFrame {
 		btnSend.setBounds(298, 108, 173, 37);
 		contentPane.add(btnSend);
 		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(10, 162, 458, 212);
-		contentPane.add(scrollPane_1);
-		scrollPane_1.setViewportView(txtArea_1);
+		JScrollPane scrollPane_aliceMsgs = new JScrollPane();
+		scrollPane_aliceMsgs.setBounds(10, 162, 458, 212);
+		contentPane.add(scrollPane_aliceMsgs);
+		scrollPane_aliceMsgs.setViewportView(txtArea_aliceMsgs);
 		
 		JLabel lblAlice = new JLabel("Alice:");
 		lblAlice.setBounds(10, 77, 53, 24);
@@ -220,5 +249,13 @@ public class alice extends JFrame {
 		choice.add("RSA");
 		contentPane.add(choice);
 		
+	}
+	
+	public static int getWrappedLines(JTextArea component)
+	{
+		View view = component.getUI().getRootView(component).getView(0);
+		int preferredHeight = (int)view.getPreferredSpan(View.Y_AXIS);
+		int lineHeight = component.getFontMetrics( component.getFont() ).getHeight();
+		return preferredHeight / lineHeight;
 	}
 }

@@ -1,1 +1,1 @@
-Known PlainText Attack
+Chosen PlainText Attack
